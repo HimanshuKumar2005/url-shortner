@@ -4,11 +4,14 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { createClient } from 'redis';
 import { Url } from './models/Url.js';
+import { User } from './models/User.js';
 import { RangeAllocator } from './services/rangeAllocator.js';
 import { createCache } from './services/cache.js';
 import { createUrlController } from './controllers/urlController.js';
 import { createApiRouter } from './routes/apiRoutes.js';
 import { createRedirectRouter } from './routes/redirectRoutes.js';
+import { createAuthController } from './controllers/authController.js';
+import { optionalAuth, requireAuth } from './middleware/auth.js';
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -22,8 +25,9 @@ app.use(express.json({ limit: '10kb' }));
 const allocator = new RangeAllocator(redis, Number(process.env.ID_RANGE_SIZE || 1_000_000));
 const cache = createCache(redis, Number(process.env.CACHE_TTL_SECONDS || 86400));
 const urlController = createUrlController({ Url, allocator, cache, baseUrl });
+const authController = createAuthController({ User });
 
-app.use('/api', createApiRouter({ urlController }));
+app.use('/api', createApiRouter({ urlController, authController, optionalAuth, requireAuth }));
 app.use('/', createRedirectRouter({ urlController }));
 
 app.use((error, _request, response, _next) => {

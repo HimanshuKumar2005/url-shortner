@@ -6,6 +6,7 @@ const urlSchema = new mongoose.Schema(
     shortKey: { type: String, required: true, unique: true, index: true, minlength: 7, maxlength: 7 },
     longUrl: { type: String, required: true, trim: true },
     clicks: { type: Number, default: 0, min: 0 },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } },
 );

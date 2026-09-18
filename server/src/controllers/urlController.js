@@ -29,10 +29,19 @@ export function createUrlController({ Url, allocator, cache, baseUrl }) {
 
       const numericId = await allocator.next();
       const shortKey = encodeBase62(numericId);
-      const url = await Url.create({ numericId, shortKey, longUrl });
+      const url = await Url.create({ numericId, shortKey, longUrl, userId: request.user?.sub || null });
       await cache.set(shortKey, longUrl);
 
       return response.status(201).json(toUrlResponse(url, baseUrl));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async function mine(request, response, next) {
+    try {
+      const urls = await Url.find({ userId: request.user.sub }).sort({ createdAt: -1 }).lean();
+      return response.json(urls.map((url) => toUrlResponse(url, baseUrl)));
     } catch (error) {
       return next(error);
     }
@@ -73,5 +82,5 @@ export function createUrlController({ Url, allocator, cache, baseUrl }) {
     }
   }
 
-  return { shorten, analytics, redirect };
+  return { shorten, analytics, mine, redirect };
 }
