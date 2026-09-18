@@ -1,0 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import 'tailwindcss';
+
+:root { font-family: 'DM Sans', sans-serif; font-synthesis: none; }
+body { margin: 0; }
+h1, h2, h3, nav, button { font-family: 'Space Grotesk', sans-serif; }
+.animate-rise { animation: rise 700ms ease-out both; }
+.animate-rise-delayed { animation: rise 700ms 120ms ease-out both; }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
