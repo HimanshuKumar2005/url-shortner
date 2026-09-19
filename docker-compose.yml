@@ -11,13 +11,16 @@ services:
       ID_RANGE_SIZE: 1000000
       CACHE_TTL_SECONDS: 86400
       JWT_SECRET: change-this-in-production
-      GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     depends_on:
       - mongo
       - redis
 
   client:
-    build: ./client
+    build:
+      context: ./client
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     ports:
       - "5173:80"
     depends_on:
