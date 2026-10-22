@@ -18,6 +18,9 @@ A low-latency URL shortener built with React, Express, MongoDB, Redis, and Docke
 - Keep anonymous links in browser `sessionStorage` for the current browser session.
 - Store authenticated links in MongoDB and cache redirects in Redis.
 - Allocate ID ranges atomically through Redis for safe multi-instance operation.
+- Rate-limit link creation per IP address or authenticated user.
+- Reject automated submissions through a honeypot field.
+- Block localhost, private-network, link-local, and configured unsafe destination domains.
 - Expose a health endpoint for service monitoring.
 - Run the complete application with Docker Compose.
 
@@ -63,3 +66,13 @@ Each API instance reserves a 1,000,000-ID block from Redis using an atomic `INCR
 Authentication is optional. Anonymous links are kept in browser `sessionStorage` and are available only for that browser session. Registered links are associated with the user's account and loaded from MongoDB after login. Set a strong `JWT_SECRET` in `server/.env` before deployment.
 
 Google sign-in is supported through Google Identity Services. Set `GOOGLE_CLIENT_ID` in the server environment and `VITE_GOOGLE_CLIENT_ID` when building the client. The Google OAuth client must allow the client origin (for example, `http://localhost:5173`).
+
+## Abuse protection configuration
+
+The server applies a default limit of 30 shortening requests per 15 minutes for each IP address or authenticated user. Configure these values in the server environment:
+
+- `SHORTEN_RATE_LIMIT_WINDOW_MS` controls the rate-limit window in milliseconds.
+- `SHORTEN_RATE_LIMIT_MAX` controls the maximum shortening requests per window.
+- `BLOCKED_DOMAINS` accepts a comma-separated list of domains and subdomains to reject, such as `example-malware.test,phishing.test`.
+
+Private destinations such as `localhost`, loopback addresses, link-local addresses, and RFC1918 private IPv4 ranges are blocked by default. This protects the service from being used to create links to internal systems.

@@ -1,4 +1,5 @@
 import { encodeBase62 } from '../utils/base62.js';
+import { isBlockedDestination } from '../middleware/abuseProtection.js';
 
 function isValidUrl(value) {
   try {
@@ -23,9 +24,15 @@ function toUrlResponse(url, baseUrl) {
 export function createUrlController({ Url, allocator, cache, baseUrl }) {
   async function shorten(request, response, next) {
     try {
-      const { label, longUrl } = request.body;
+      const { label, longUrl, website } = request.body;
+      if (typeof website === 'string' && website.trim()) {
+        return response.status(400).json({ message: 'Request rejected' });
+      }
       if (typeof longUrl !== 'string' || !isValidUrl(longUrl)) {
         return response.status(400).json({ message: 'longUrl must be a valid HTTP or HTTPS URL' });
+      }
+      if (isBlockedDestination(longUrl)) {
+        return response.status(400).json({ message: 'This destination domain is not allowed' });
       }
       if (label !== undefined && (typeof label !== 'string' || label.trim().length > 80)) {
         return response.status(400).json({ message: 'label must be a string of 80 characters or fewer' });

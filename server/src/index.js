@@ -12,6 +12,7 @@ import { createApiRouter } from './routes/apiRoutes.js';
 import { createRedirectRouter } from './routes/redirectRoutes.js';
 import { createAuthController } from './controllers/authController.js';
 import { optionalAuth, requireAuth } from './middleware/auth.js';
+import { shortenRateLimit } from './middleware/abuseProtection.js';
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
@@ -27,7 +28,7 @@ const cache = createCache(redis, Number(process.env.CACHE_TTL_SECONDS || 86400))
 const urlController = createUrlController({ Url, allocator, cache, baseUrl });
 const authController = createAuthController({ User });
 
-app.use('/api', createApiRouter({ urlController, authController, optionalAuth, requireAuth }));
+app.use('/api', createApiRouter({ urlController, authController, optionalAuth, requireAuth, shortenRateLimit }));
 app.use('/', createRedirectRouter({ urlController }));
 
 app.use((error, _request, response, _next) => {

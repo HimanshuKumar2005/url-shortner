@@ -6,8 +6,8 @@ function authConfig(auth) {
   return auth?.token ? { headers: { Authorization: `Bearer ${auth.token}` } } : undefined;
 }
 
-export function shortenUrl(longUrl, label, auth) {
-  return axios.post(`${API_ROOT}/api/shorten`, { longUrl, label }, authConfig(auth));
+export function shortenUrl(longUrl, label, auth, website = '') {
+  return axios.post(`${API_ROOT}/api/shorten`, { longUrl, label, website }, authConfig(auth));
 }
 
 export function fetchSavedLinks(auth) {

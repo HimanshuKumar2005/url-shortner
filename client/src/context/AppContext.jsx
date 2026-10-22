@@ -121,7 +121,8 @@ export function AppProvider({ children }) {
     setIsLoading(true);
     try {
       const linkLabel = label.trim() || `label${links.length + 1}`;
-      const { data } = await shortenUrl(longUrl, linkLabel, auth);
+      const website = event.currentTarget.elements.website?.value || '';
+      const { data } = await shortenUrl(longUrl, linkLabel, auth, website);
       setResult(data);
       setLinks((currentLinks) => [data, ...currentLinks]);
       setLongUrl('');
