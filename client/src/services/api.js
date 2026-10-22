@@ -6,16 +6,16 @@ function authConfig(auth) {
   return auth?.token ? { headers: { Authorization: `Bearer ${auth.token}` } } : undefined;
 }
 
-export function shortenUrl(longUrl, label, auth, website = '') {
-  return axios.post(`${API_ROOT}/api/shorten`, { longUrl, label, website }, authConfig(auth));
+export function shortenUrl(longUrl, label, auth, website = '', lifecycle = {}) {
+  return axios.post(`${API_ROOT}/api/shorten`, { longUrl, label, website, ...lifecycle }, authConfig(auth));
 }
 
 export function fetchSavedLinks(auth) {
   return axios.get(`${API_ROOT}/api/urls`, authConfig(auth));
 }
 
-export function updateLinkLabel(shortKey, label, auth) {
-  return axios.patch(`${API_ROOT}/api/urls/${shortKey}`, { label }, authConfig(auth));
+export function updateLink(shortKey, updates, auth) {
+  return axios.patch(`${API_ROOT}/api/urls/${shortKey}`, updates, authConfig(auth));
 }
 
 export function fetchAnalytics(shortKey) {

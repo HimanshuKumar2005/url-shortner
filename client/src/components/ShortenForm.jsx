@@ -2,7 +2,7 @@ import { ArrowUpRight, Link2, LoaderCircle, Tag } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 function ShortenForm() {
-  const { createShortLink, error, isLoading, label, longUrl, setLabel, setLongUrl, nextLabel } = useApp();
+  const { createShortLink, error, expiresAt, isLoading, label, longUrl, maxClicks, nextLabel, setExpiresAt, setLabel, setLongUrl, setMaxClicks, setStartsAt, startsAt } = useApp();
 
   return (
     <div className="animate-rise-delayed rounded-2xl border border-[#d8dfd7] bg-white p-5 shadow-[0_22px_60px_rgba(36,62,48,0.08)] sm:p-7">
@@ -15,6 +15,11 @@ function ShortenForm() {
         <div className="relative">
           <Tag size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#718078]" />
           <input id="link-label" value={label} onChange={(event) => setLabel(event.target.value)} placeholder={nextLabel} maxLength="80" className="w-full rounded-xl border border-[#d8dfd7] bg-[#fbfcfa] py-3.5 pl-11 pr-4 text-sm outline-none transition focus:border-[#5b8b73] focus:ring-4 focus:ring-[#5b8b73]/10" />
+        </div>
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          <div><label htmlFor="starts-at" className="mb-2 block text-sm font-semibold">Active from</label><input id="starts-at" type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className="w-full rounded-xl border border-[#d8dfd7] bg-[#fbfcfa] px-3 py-3 text-sm outline-none focus:border-[#5b8b73] focus:ring-4 focus:ring-[#5b8b73]/10" /></div>
+          <div><label htmlFor="expires-at" className="mb-2 block text-sm font-semibold">Expires at</label><input id="expires-at" type="datetime-local" value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} className="w-full rounded-xl border border-[#d8dfd7] bg-[#fbfcfa] px-3 py-3 text-sm outline-none focus:border-[#5b8b73] focus:ring-4 focus:ring-[#5b8b73]/10" /></div>
+          <div><label htmlFor="max-clicks" className="mb-2 block text-sm font-semibold">Maximum clicks</label><input id="max-clicks" type="number" min="1" step="1" value={maxClicks} onChange={(event) => setMaxClicks(event.target.value)} placeholder="Unlimited" className="w-full rounded-xl border border-[#d8dfd7] bg-[#fbfcfa] px-3 py-3 text-sm outline-none focus:border-[#5b8b73] focus:ring-4 focus:ring-[#5b8b73]/10" /></div>
         </div>
         {error && <p className="mt-2 text-sm font-medium text-[#bb5d4c]">{error}</p>}
         <button disabled={isLoading} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#17231f] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#30483c] disabled:cursor-wait disabled:opacity-70">{isLoading ? <LoaderCircle className="animate-spin" size={17} /> : <Link2 size={17} />} {isLoading ? 'Creating your link...' : 'Shorten URL'}</button>

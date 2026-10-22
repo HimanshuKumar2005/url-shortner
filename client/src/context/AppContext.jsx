@@ -5,7 +5,7 @@ import {
   fetchAnalytics,
   fetchSavedLinks,
   shortenUrl,
-  updateLinkLabel as updateLinkLabelRequest,
+  updateLink as updateLinkRequest,
 } from '../services/api';
 import { clearAuth, readAuth, readSessionLinks, saveAuth, saveSessionLinks } from '../utils/storage';
 import { isValidUrl } from '../utils/validation';
@@ -18,6 +18,9 @@ export function AppProvider({ children }) {
   const [result, setResult] = useState(null);
   const [links, setLinks] = useState([]);
   const [label, setLabel] = useState('');
+  const [startsAt, setStartsAt] = useState('');
+  const [expiresAt, setExpiresAt] = useState('');
+  const [maxClicks, setMaxClicks] = useState('');
   const [analytics, setAnalytics] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -122,13 +125,21 @@ export function AppProvider({ children }) {
     try {
       const linkLabel = label.trim() || `label${links.length + 1}`;
       const website = event.currentTarget.elements.website?.value || '';
-      const { data } = await shortenUrl(longUrl, linkLabel, auth, website);
+      const lifecycle = {
+        startsAt: startsAt ? new Date(startsAt).toISOString() : null,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+        maxClicks: maxClicks ? Number(maxClicks) : null,
+      };
+      const { data } = await shortenUrl(longUrl, linkLabel, auth, website, lifecycle);
       setResult(data);
       setLinks((currentLinks) => [data, ...currentLinks]);
       setLongUrl('');
       setLabel('');
-    } catch {
-      setError('The service could not shorten that link. Is the API running?');
+      setStartsAt('');
+      setExpiresAt('');
+      setMaxClicks('');
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'The service could not shorten that link. Is the API running?');
     } finally {
       setIsLoading(false);
     }
@@ -154,11 +165,8 @@ export function AppProvider({ children }) {
     if (result) await loadLinkAnalytics(result);
   }
 
-  async function updateLinkLabel(shortKey, nextLabel) {
-    const trimmedLabel = nextLabel.trim();
-    if (!trimmedLabel) throw new Error('A label is required.');
-
-    const { data } = await updateLinkLabelRequest(shortKey, trimmedLabel, auth);
+  async function updateLink(shortKey, updates) {
+    const { data } = await updateLinkRequest(shortKey, updates, auth);
     setLinks((currentLinks) => currentLinks.map((link) => link.shortKey === shortKey ? data : link));
     setResult((currentResult) => currentResult?.shortKey === shortKey ? data : currentResult);
     return data;
@@ -183,6 +191,7 @@ export function AppProvider({ children }) {
     loadLinkAnalytics,
     longUrl,
     logout,
+    maxClicks,
     result,
     setAuthForm,
     setAuthMode,
@@ -190,9 +199,14 @@ export function AppProvider({ children }) {
     setIsAuthOpen,
     setLabel,
     setLongUrl,
+    setMaxClicks,
+    setStartsAt,
     submitAuth,
+    startsAt,
+    expiresAt,
+    setExpiresAt,
     nextLabel: `label${links.length + 1}`,
-    updateLinkLabel,
+    updateLink,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

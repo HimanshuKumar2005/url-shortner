@@ -5,10 +5,14 @@ A low-latency URL shortener built with React, Express, MongoDB, Redis, and Docke
 ## Features
 
 - Shorten valid HTTP and HTTPS URLs into fixed seven-character Base62 links.
-- Redirect short links to their original destinations with HTTP 301 redirects.
+- Redirect short links to their original destinations with cache-safe HTTP 302 redirects.
 - Add a custom label to every shortened URL.
 - Generate sequential default labels such as `label1`, `label2`, and `label3` when no label is provided.
 - Edit link labels after creation from the dashboard using inline editing.
+- Schedule links to become active at a future date and expire them automatically.
+- Limit links to a maximum number of clicks.
+- Disable and re-enable links from the dashboard.
+- Show `active`, `scheduled`, `expired`, `limit-reached`, and `disabled` link states.
 - Validate and limit labels to 80 characters.
 - View all saved links in the dashboard with their labels, destinations, creation dates, and click counts.
 - View analytics for any shortened URL, including total clicks, creation date, and short key.
@@ -49,10 +53,10 @@ The dashboard is at http://localhost:5173 and the API is at http://localhost:400
 
 ## API
 
-- `POST /api/shorten` with `{ "longUrl": "https://example.com/path", "label": "Documentation" }`. The `label` field is optional.
-- `GET /:shortKey` returns a 301 redirect
+- `POST /api/shorten` with `{ "longUrl": "https://example.com/path", "label": "Documentation", "startsAt": "2026-11-01T09:00:00.000Z", "expiresAt": "2026-12-01T09:00:00.000Z", "maxClicks": 100 }`. Lifecycle fields are optional.
+- `GET /:shortKey` returns a cache-safe 302 redirect when the link is active
 - `GET /api/analytics/:shortKey` returns click and link metadata
-- `PATCH /api/urls/:shortKey` with `{ "label": "Updated label" }` updates the label for the link owner
+- `PATCH /api/urls/:shortKey` with `{ "label": "Updated label", "disabled": true }` updates lifecycle settings for the link owner
 - `POST /api/auth/register` with `{ "name": "Ada", "email": "ada@example.com", "password": "at-least-8-chars" }`
 - `POST /api/auth/login` with `{ "email": "ada@example.com", "password": "at-least-8-chars" }`
 - `POST /api/auth/google` with a Google Identity Services credential
@@ -60,6 +64,8 @@ The dashboard is at http://localhost:5173 and the API is at http://localhost:400
 - `GET /api/health` returns service health
 
 Each API instance reserves a 1,000,000-ID block from Redis using an atomic `INCRBY`, then encodes IDs into fixed seven-character Base62 keys.
+
+Lifecycle rules are enforced before redirects. A scheduled, expired, disabled, or click-limit-reached link returns HTTP `410` and does not increment its click count. Active links return a cache-safe `302` redirect so later disabling or expiration takes effect. Existing links without lifecycle fields remain active indefinitely.
 
 ## Authentication
 
