@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import {
   authenticate,
   authenticateWithGoogle,
+  deleteLink as deleteLinkRequest,
   fetchAnalytics,
   fetchSavedLinks,
   shortenUrl,
@@ -172,6 +173,13 @@ export function AppProvider({ children }) {
     return data;
   }
 
+  async function deleteLink(shortKey) {
+    await deleteLinkRequest(shortKey, auth);
+    setLinks((currentLinks) => currentLinks.filter((link) => link.shortKey !== shortKey));
+    setResult((currentResult) => currentResult?.shortKey === shortKey ? null : currentResult);
+    setAnalytics((currentAnalytics) => currentAnalytics?.shortKey === shortKey ? null : currentAnalytics);
+  }
+
   const value = {
     auth,
     authForm,
@@ -179,6 +187,7 @@ export function AppProvider({ children }) {
     analytics,
     copyLink,
     createShortLink,
+    deleteLink,
     error,
     googleButtonRef,
     isAuthLoading,

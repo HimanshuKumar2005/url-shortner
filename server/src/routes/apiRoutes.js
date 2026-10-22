@@ -11,6 +11,7 @@ export function createApiRouter({ urlController, authController, optionalAuth, r
   router.post('/shorten', optionalAuth, shortenRateLimit, urlController.shorten);
   router.get('/urls', optionalAuth, requireAuth, urlController.mine);
   router.patch('/urls/:shortKey', optionalAuth, urlController.updateLabel);
+  router.delete('/urls/:shortKey', optionalAuth, urlController.remove);
   router.get('/analytics/:shortKey', urlController.analytics);
 
   return router;

@@ -157,6 +157,21 @@ export function createUrlController({ Url, allocator, cache, baseUrl }) {
     }
   }
 
+  async function remove(request, response, next) {
+    try {
+      const url = await Url.findOneAndDelete({
+        shortKey: request.params.shortKey,
+        userId: request.user?.sub || null,
+      }).lean();
+      if (!url) return response.status(404).json({ message: 'Short URL not found' });
+
+      await cache.remove(url.shortKey);
+      return response.status(204).end();
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async function redirect(request, response, next) {
     try {
       const { shortKey } = request.params;
@@ -187,5 +202,5 @@ export function createUrlController({ Url, allocator, cache, baseUrl }) {
     }
   }
 
-  return { shorten, analytics, mine, redirect, updateLabel };
+  return { shorten, analytics, mine, redirect, updateLabel, remove };
 }

@@ -6,5 +6,8 @@ export function createCache(redis, ttlSeconds) {
     async set(shortKey, longUrl) {
       await redis.set(`url-shortner:url:${shortKey}`, longUrl, { EX: ttlSeconds });
     },
+    async remove(shortKey) {
+      await redis.del(`url-shortner:url:${shortKey}`);
+    },
   };
 }

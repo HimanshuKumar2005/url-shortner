@@ -18,6 +18,10 @@ export function updateLink(shortKey, updates, auth) {
   return axios.patch(`${API_ROOT}/api/urls/${shortKey}`, updates, authConfig(auth));
 }
 
+export function deleteLink(shortKey, auth) {
+  return axios.delete(`${API_ROOT}/api/urls/${shortKey}`, authConfig(auth));
+}
+
 export function fetchAnalytics(shortKey) {
   return axios.get(`${API_ROOT}/api/analytics/${shortKey}`);
 }
