@@ -5,6 +5,7 @@ import {
   fetchAnalytics,
   fetchSavedLinks,
   shortenUrl,
+  updateLinkLabel as updateLinkLabelRequest,
 } from '../services/api';
 import { clearAuth, readAuth, readSessionLinks, saveAuth, saveSessionLinks } from '../utils/storage';
 import { isValidUrl } from '../utils/validation';
@@ -16,6 +17,7 @@ export function AppProvider({ children }) {
   const [longUrl, setLongUrl] = useState('');
   const [result, setResult] = useState(null);
   const [links, setLinks] = useState([]);
+  const [label, setLabel] = useState('');
   const [analytics, setAnalytics] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -118,10 +120,12 @@ export function AppProvider({ children }) {
 
     setIsLoading(true);
     try {
-      const { data } = await shortenUrl(longUrl, auth);
+      const linkLabel = label.trim() || `label${links.length + 1}`;
+      const { data } = await shortenUrl(longUrl, linkLabel, auth);
       setResult(data);
       setLinks((currentLinks) => [data, ...currentLinks]);
       setLongUrl('');
+      setLabel('');
     } catch {
       setError('The service could not shorten that link. Is the API running?');
     } finally {
@@ -149,6 +153,16 @@ export function AppProvider({ children }) {
     if (result) await loadLinkAnalytics(result);
   }
 
+  async function updateLinkLabel(shortKey, nextLabel) {
+    const trimmedLabel = nextLabel.trim();
+    if (!trimmedLabel) throw new Error('A label is required.');
+
+    const { data } = await updateLinkLabelRequest(shortKey, trimmedLabel, auth);
+    setLinks((currentLinks) => currentLinks.map((link) => link.shortKey === shortKey ? data : link));
+    setResult((currentResult) => currentResult?.shortKey === shortKey ? data : currentResult);
+    return data;
+  }
+
   const value = {
     auth,
     authForm,
@@ -162,6 +176,7 @@ export function AppProvider({ children }) {
     isAuthOpen,
     isCopied,
     isLoading,
+    label,
     links,
     loadAnalytics,
     loadLinkAnalytics,
@@ -172,8 +187,11 @@ export function AppProvider({ children }) {
     setAuthMode,
     setError,
     setIsAuthOpen,
+    setLabel,
     setLongUrl,
     submitAuth,
+    nextLabel: `label${links.length + 1}`,
+    updateLinkLabel,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

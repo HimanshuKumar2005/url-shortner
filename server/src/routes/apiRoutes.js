@@ -10,6 +10,7 @@ export function createApiRouter({ urlController, authController, optionalAuth, r
   router.get('/auth/me', optionalAuth, requireAuth, authController.me);
   router.post('/shorten', optionalAuth, urlController.shorten);
   router.get('/urls', optionalAuth, requireAuth, urlController.mine);
+  router.patch('/urls/:shortKey', optionalAuth, urlController.updateLabel);
   router.get('/analytics/:shortKey', urlController.analytics);
 
   return router;

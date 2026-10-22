@@ -5,6 +5,7 @@ const urlSchema = new mongoose.Schema(
     numericId: { type: Number, required: true, unique: true, index: true },
     shortKey: { type: String, required: true, unique: true, index: true, minlength: 7, maxlength: 7 },
     longUrl: { type: String, required: true, trim: true },
+    label: { type: String, required: true, trim: true, maxlength: 80, default: 'label1' },
     clicks: { type: Number, default: 0, min: 0 },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
   },
