@@ -2,6 +2,25 @@
 
 A low-latency URL shortener built with React, Express, MongoDB, Redis, and Docker.
 
+## Features
+
+- Shorten valid HTTP and HTTPS URLs into fixed seven-character Base62 links.
+- Redirect short links to their original destinations with HTTP 301 redirects.
+- Add a custom label to every shortened URL.
+- Generate sequential default labels such as `label1`, `label2`, and `label3` when no label is provided.
+- Edit link labels after creation from the dashboard using inline editing.
+- Validate and limit labels to 80 characters.
+- View all saved links in the dashboard with their labels, destinations, creation dates, and click counts.
+- View analytics for any shortened URL, including total clicks, creation date, and short key.
+- Copy short links or open them in a new browser tab from the result and dashboard views.
+- Create links anonymously or authenticate with an account to save links permanently.
+- Register and log in with email and password, or use Google sign-in.
+- Keep anonymous links in browser `sessionStorage` for the current browser session.
+- Store authenticated links in MongoDB and cache redirects in Redis.
+- Allocate ID ranges atomically through Redis for safe multi-instance operation.
+- Expose a health endpoint for service monitoring.
+- Run the complete application with Docker Compose.
+
 ## Run locally
 
 1. Start MongoDB and Redis, or run `docker compose up mongo redis`.
@@ -20,16 +39,17 @@ The dashboard is at http://localhost:5173 and the API is at http://localhost:400
 ## Server structure
 
 - `server/src/index.js` configures middleware, database clients, dependency injection, and startup.
-- `server/src/routes/apiRoutes.js` defines `/api/health`, `/api/shorten`, and `/api/analytics/:shortKey`.
+- `server/src/routes/apiRoutes.js` defines health, shortening, label update, authentication, saved-link, and analytics endpoints.
 - `server/src/routes/redirectRoutes.js` defines the public `/:shortKey` redirect route.
 - `server/src/controllers/urlController.js` contains validation, ID generation, caching, redirects, and analytics behavior.
 - `server/src/models` and `server/src/services` isolate persistence and infrastructure concerns.
 
 ## API
 
-- `POST /api/shorten` with `{ "longUrl": "https://example.com/path" }`
+- `POST /api/shorten` with `{ "longUrl": "https://example.com/path", "label": "Documentation" }`. The `label` field is optional.
 - `GET /:shortKey` returns a 301 redirect
 - `GET /api/analytics/:shortKey` returns click and link metadata
+- `PATCH /api/urls/:shortKey` with `{ "label": "Updated label" }` updates the label for the link owner
 - `POST /api/auth/register` with `{ "name": "Ada", "email": "ada@example.com", "password": "at-least-8-chars" }`
 - `POST /api/auth/login` with `{ "email": "ada@example.com", "password": "at-least-8-chars" }`
 - `POST /api/auth/google` with a Google Identity Services credential
